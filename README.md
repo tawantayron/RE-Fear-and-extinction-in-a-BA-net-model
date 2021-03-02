@@ -1,5 +1,7 @@
 ### [ReScience C](https://rescience.github.io/) article template
 
+HELLO!
+
 This repository contains the Latex (optional) template for writing a ReScience
 C article and the (mandatory) YAML metadata file. For the actual article,
 you're free to use any software you like as long as you enforce the proposed
