@@ -2,115 +2,134 @@
 # -------------------------------------------------------
 
 # Title of the article:
-#  - For a successful replication, it should be prefixed with "[Re]"
+#  - For a successful replication, it shoudl be prefixed with "[Re]"
 #  - For a failed replication, it should be prefixed with "[¬Re]"
 #  - For other article types, no instruction (but please, not too long)
-title: "ReScience (R)evolution"
+title: "[Re] Context-Dependent Encoding of Fear and Extinction Memories in a Large-Scale Network Model of the Basal Amygdala"
 
 # List of authors with name, orcid number, email and affiliation
-# Affiliation "*" means contact author (required even for single-authored papers)
+# Affiliation "*" means contact author
 authors:
-  - name: Konrad Hinsen
-    orcid: 0000-0003-0330-9428
-    email: konrad.hinsen@cnrs.fr
-    affiliations: 1,2
+  - name: Tawan T. A. Carvalho
+    orcid: 0000-0001-9583-4830
+    email: tawantayron@yahoo.com.br
+    affiliations: 1,* # * is for contact author
     
-  - name: Nicolas P. Rougier
-    orcid: 0000-0002-6972-589X
-    email: Nicolas.Rougier@inria.fr
-    affiliations: 3,4,5,*      # * is for contact author
+  - name: Luana B. Domingos
+    orcid: 0000-0002-7022-6502
+    email: domingos.luana@gmail.com
+    affiliations: 2
 
+  - name: Renan O. Shimoura
+    orcid: 0000-0002-6580-5999
+    email: renanshimoura@gmail.com
+    affiliations: 3
+
+  - name: Nilton L. Kamiji
+    orcid: 0000-0001-5006-6612
+    email: nilton.kamiji@gmail.com
+    affiliations: 3
+    
+  - name: Vinicius L. Cordeiro
+    orcid: 0000-0001-7115-9041
+    email: vinicius.lima.cordeiro@gmail.com
+    affiliations: 4
+    
+  - name: Mauro Copelli
+    orcid: 0000-0001-7441-2858
+    email: mauro.copelli@ufpe.br
+    affiliations: 1
+    
+  - name: Antonio C. Roque
+    orcid: 0000-0003-1260-4840
+    email: antonior@usp.br
+    affiliations: 3    
+    
+    
 # List of affiliations with code (corresponding to author affiliations), name
 # and address. You can also use these affiliations to add text such as "Equal
 # contributions" as name (with no address).
 affiliations:
   - code:    1
-    name:    Centre de Biophysique Moléculaire, CNRS UPR4301
-    address: Orléans, France
-    
+    name:    Department of Physics, Federal University of Pernambuco
+    address: Recife, Brazil
+
   - code:    2
-    name:    Synchrotron SOLEIL, Division Expériences
-    address: Gif sur Yvette, France
+    name:    Department of Pharmacology, Ribeirão Preto Medical School (FMRP), University of São Paulo
+    address: Ribeirão Preto, Brazil
     
   - code:    3
-    name:    INRIA Bordeaux Sud-Ouest
-    address: Bordeaux, France
-    
-  - code:    4
-    name:    LaBRI, Université de Bordeaux, Institut Polytechnique de Bordeaux,
-             Centre National de la Recherche Scientifique, UMR 5800
-    address: Talence, France
-    
-  - code:    5
-    name:    Institut des Maladies Neurodégénératives, Université  de Bordeaux,
-             Centre National de la Recherche Scientifique, UMR 5293
-    address: Bordeaux, France
+    name:    Department of Physics, School of Philosophy, Sciences and Letters of Ribeirão Preto (FFCLRP), University of São Paulo
+    address: Ribeirão Preto, Brazil
 
+  - code:    4
+    name:    Systems Neuroscience Institut (INS, UMR 1106), Aix-Marseille University
+    address: Marseille, France
 
 # List of keywords (adding the programming language might be a good idea)
-keywords: rescience c, rescience x
+keywords: Basal amygdala, Fear and extinction memories, Context-dependent, Conditioned stimulus, Spiking network model
 
-# Code URL and DOI/SWH (url is mandatory for replication, doi after acceptance)
-# You can get a DOI for your code from Zenodo, or an SWH identifier from
-# Software Heritage.
+# Code URL and DOI (url is mandatory for replication, doi after acceptance)
+# You can get a DOI for your code from Zenodo,
 #   see https://guides.github.com/activities/citable-code/
 code:
-  - url: https://github.com/rescience-c/template
-  - doi: 
-  - swh: 
+  - url: https://github.com/tawantayron/RE-Fear-and-extinction-in-a-BA-net-model
+  - doi:
 
-# Data URL and DOI (optional if no data)
+# Date URL and DOI (optional if no data)
 data:
   - url:
   - doi:
 
 # Information about the original article that has been replicated
 replication:
- - cite: # Full textual citation
- - bib:  # Bibtex key (if any) in your bibliography file
- - url:  # URL to the PDF, try to link to a non-paywall version
- - doi:  # Regular digital object identifier
+ - cite: Vlachos, I., Herry, C., Lüthi, A., Aertsen, A., & Kumar, A. "Context-dependent encoding of fear and extinction memories in a large-scale network model of the basal amygdala". PLoS Comput Biol, v. 7, n. 3, p. e1001104, 2011. # Full textual citation
+ - bib:  Vlachos2011 # Bibtex key (if any) in your bibliography file
+ - url:  https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1001104 # URL to the PDF, try to link to a non-paywall version
+ - doi:  10.1371/journal.pcbi.1001104 # Regular digital object identifier
 
 # Don't forget to surround abstract with double quotes
-abstract: "Three years have passed since ReScience published its first article
-           and since September 2015, things have been going steadily. We're
-           still alive, independent and without a budget. In the meantime, we
-           have published around 20 articles (mostly in computational
-           neuroscience & computational ecology) and the initial has grown
-           from around 10 to roughly 100 members (editors and reviewers), we
-           have advertised ReScience at several conferences worldwide, gave
-           some interviews and we published an article introducing ReScience in
-           PeerJ. Based on our experience at managing the journal during these
-           three years, we think the time is ripe for proposing some changes."
+abstract: "The basal nucleus of the amygdala (BA) is related to the process
+of creating memories of conditioned fear and extinction that are both dependent
+on the context. Vlacho and collaborators developed two models of neural networks
+to study the effect of plasticity based on a specific phenomenological rule in BA
+excitatory neurons. When an excitatory subpopulation receives conditioned stimulus
+(CS) and contextual inputs in narrow time windows, synaptic weights are potentiated
+by this effect, increasing the subpopulation's firing rate related to the specified
+context. In this replication, we implemented the models using Python (for the mean-field
+model) and Brian 2 (for the spiking neuron model), and we were able to reproduce the
+original results qualitatively. In order to replicate the model, it was necessary to
+estimate a considerable amount of parameters and to adapt some of the protocols that
+were either ambiguous or absent in the methodological descriptions of the original work."
 
 # Bibliography file (yours)
 bibliography: bibliography.bib
-  
+
 # Type of the article
 # Type can be:
 #  * Editorial
 #  * Letter
 #  * Replication
-type: Editorial
+type: Replication
 
 # Scientific domain of the article (e.g. Computational Neuroscience)
 #  (one domain only & try to be not overly specific)
-domain: 
+domain: Computational Neuroscience
 
 # Coding language (main one only if several)
-language:
+language: Python and Brian 2
 
-  
+
 # To be filled by the author(s) after acceptance
 # -----------------------------------------------------------------------------
 
 # For example, the URL of the GitHub issue where review actually occured
-review: 
-  - url: 
+review:
+  - url:
 
 contributors:
   - name:
-    orcid: 
+    orcid:
     role: editor
   - name:
     orcid:
@@ -121,9 +140,9 @@ contributors:
 
 # This information will be provided by the editor
 dates:
-  - received:  November 1, 2018
+  - received:
   - accepted:
-  - published: 
+  - published:
 
 # This information will be provided by the editor
 article:
@@ -133,7 +152,7 @@ article:
 
 # This information will be provided by the editor
 journal:
-  - name:   "ReScience C"
-  - issn:   2430-3658
-  - volume: 4
-  - issue:  1
+  - name:
+  - issn:   
+  - volume:
+  - issue:
