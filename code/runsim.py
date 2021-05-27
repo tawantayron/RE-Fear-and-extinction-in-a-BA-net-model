@@ -740,6 +740,7 @@ elif protocol == 3:
 #protocol 4: in network connectivity and change in inhibitory synaptic weights, objective: to check the increase of synchrony
 #            analogous to figure 8B of the original paper
 elif protocol == 4:
+
     nCSA = 10
     tCTXA_dur = nCSA*(tCS_dur+tCS_off)	# CTX_A duration in ms
 
@@ -759,9 +760,12 @@ elif protocol == 4:
     tsim = tinit+tCTXA_dur
     tstim= np.arange(0.0, tsim, delta_tr)			# Times discretized
 
-    pii_variation    = np.arange(0.1,0.95,0.1)#np.arange(0,0.95,0.05)
-    wii_variation    = [1.0, 2.0, 3.0]
-    sdelii_variation = ['(rand() + 1.0)*ms','(rand()*0.8 + 0.2)*ms']
+    #  pii_variation    = np.arange(0.1,0.95,0.1)#np.arange(0,0.95,0.05)
+    pii_variation    = np.linspace(0.1,0.95,4)#np.arange(0,0.95,0.05)
+    #  wii_variation    = [1.0, 2.0, 3.0]
+    wii_variation    = [2.0]
+    #  sdelii_variation = ['(rand() + 1.0)*ms','(rand()*0.8 + 0.2)*ms']
+    sdelii_variation = ['(rand() + 1.0)*ms']
     sdelii_label     = ['high', 'low']
     n_simulations    = 5
 
@@ -785,18 +789,6 @@ elif protocol == 4:
                             1.25*nS], #wei
                             [2.50*nS,  #wie
                             wii*nS]]  #wii
-
-                    # optional:
-                    # wsyn = [[1.25*nS,  #wee
-                    #          1.25*nS], #wei
-                    #         [wii*nS,  #wie
-                    #          wii*nS]]  #wii
-
-                    # optional:
-                    # wsyn = [[wii*nS,  #wee
-                    #          wii*nS], #wei
-                    #         [wii*nS,  #wie
-                    #          wii*nS]]  #wii
 
                     pcon =  [[0.01,   # excitatory to excitatory
                             0.50],    # excitatory to inhibitory
@@ -823,10 +815,8 @@ elif protocol == 4:
                 
         return(pii)
 
-    #  processing_blockage = mp.Pool(3)
-    #  results = processing_blockage.map(synchrony_simulations, pii_variation)
-    results = Parallel(n_jobs=-1, backend='multiprocessing')(delayed(synchrony_simulations)(pii) for pii in pii_variation )
-
+    if __name__ == "__main__":
+        results = Parallel(n_jobs=-1, backend='multiprocessing')(delayed(synchrony_simulations)(pii) for pii in pii_variation )
 
     ###########################################################################
     # Synchrony index
@@ -901,12 +891,6 @@ elif protocol == 4:
                     for i in range(nCSA):
                         cs_intervals.append([tstim[nonzero_id][ind],tstim[nonzero_id][ind+winsize-1]])
                         ind+=winsize
-
-                    # sync_aux = 0.0
-                    # for j in range(nCSA-10, nCSA):
-                    #     inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[j][0],cs_intervals[j][1],1.0))
-                    #     sync_aux += np.var(inh_activity)/np.mean(inh_activity)
-                    # sync_index.append(sync_aux/(nCSA-(nCSA-10)))
 
                     inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[-4][0],tstim[-1],1.0))
                     n_sync_index.append(np.var(inh_activity)/np.mean(inh_activity))
