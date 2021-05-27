@@ -761,7 +761,7 @@ elif protocol == 4:
     tstim= np.arange(0.0, tsim, delta_tr)			# Times discretized
 
     #  pii_variation    = np.arange(0.1,0.95,0.1)#np.arange(0,0.95,0.05)
-    pii_variation    = np.linspace(0.1,0.95,4)#np.arange(0,0.95,0.05)
+    pii_variation    = [0.1,0.6,0.7]#np.arange(0,0.95,0.05)
     #  wii_variation    = [1.0, 2.0, 3.0]
     wii_variation    = [2.0]
     #  sdelii_variation = ['(rand() + 1.0)*ms','(rand()*0.8 + 0.2)*ms']
@@ -824,7 +824,7 @@ elif protocol == 4:
 
 
     #Understanding the meaning of our synchrony index
-    wii = 2.00
+    wii = 2.0
     sdelii = 0
     l = 0
     pii = [0.1,0.6,0.7]
@@ -866,7 +866,6 @@ elif protocol == 4:
     plt.tight_layout(h_pad=0)
     plt.savefig('synchrony/examples_synchrony_index.png', dpi = 200)
     
-
     #complete figure for all simulations
     plt.figure()
     graph_color = ['gray', 'lightgreen', 'darkgreen']
