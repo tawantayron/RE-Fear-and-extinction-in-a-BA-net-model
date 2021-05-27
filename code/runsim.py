@@ -825,7 +825,7 @@ elif protocol == 4:
 
     #  processing_blockage = mp.Pool(3)
     #  results = processing_blockage.map(synchrony_simulations, pii_variation)
-    results = Parallel(n_jobs=-1, backend='loky')(delayed(synchrony_simulations)(pii) for pii in pii_variation )
+    results = Parallel(n_jobs=-1, backend='multiprocessing')(delayed(synchrony_simulations)(pii) for pii in pii_variation )
 
 
     ###########################################################################
