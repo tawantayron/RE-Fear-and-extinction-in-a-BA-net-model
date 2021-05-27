@@ -25,6 +25,7 @@ from amygdala   import *
 
 import sys
 import os
+from   joblib           import Parallel, delayed
 import multiprocessing as mp
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -822,8 +823,9 @@ elif protocol == 4:
                 
         return(pii)
 
-    processing_blockage = mp.Pool(3)
-    results = processing_blockage.map(synchrony_simulations, pii_variation)
+    #  processing_blockage = mp.Pool(3)
+    #  results = processing_blockage.map(synchrony_simulations, pii_variation)
+    results = Parallel(n_jobs=-1, backend='loky')(delayed(synchrony_simulations)(pii) for pii in pii_variation )
 
 
     ###########################################################################
