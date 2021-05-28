@@ -760,12 +760,9 @@ elif protocol == 4:
     tsim = tinit+tCTXA_dur
     tstim= np.arange(0.0, tsim, delta_tr)			# Times discretized
 
-    #  pii_variation    = np.arange(0.1,0.95,0.1)#np.arange(0,0.95,0.05)
-    pii_variation    = [0.1,0.6,0.7]#np.arange(0,0.95,0.05)
-    #  wii_variation    = [1.0, 2.0, 3.0]
-    wii_variation    = [2.0]
-    #  sdelii_variation = ['(rand() + 1.0)*ms','(rand()*0.8 + 0.2)*ms']
-    sdelii_variation = ['(rand() + 1.0)*ms']
+    pii_variation    = np.arange(0.1,0.95,0.1)#np.arange(0,0.95,0.05)
+    wii_variation    = [1.0, 2.0, 3.0]
+    sdelii_variation = ['(rand() + 1.0)*ms','(rand()*0.8 + 0.2)*ms']
     sdelii_label     = ['high', 'low']
     n_simulations    = 5
 
