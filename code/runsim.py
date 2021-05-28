@@ -819,7 +819,6 @@ elif protocol == 4:
     # Synchrony index
     ###########################################################################
 
-
     #Understanding the meaning of our synchrony index
     wii = 2.0
     sdelii = 0
