@@ -210,138 +210,139 @@ elif protocol == 1:
         
         return(fr_A, fr_B, CS_A/nS, CS_B/nS, CTX_A/nS, CTX_B/nS)
 
-    processing_simulations = mp.Pool(3)
-    results = processing_simulations.map(conditioning_extinction_simulations, range(n_simulations))
+    if __name__ == '__main__':
+        processing_simulations = mp.Pool(3)
+        results = processing_simulations.map(conditioning_extinction_simulations, range(n_simulations))
 
-    #loading the data from the last simulation
-    data = np.load('conditioning_extinction/last_simulation_data.npy', allow_pickle=True)
-    spk_ni = data.item().get('spk_ni_t')
-    spk_ne = data.item().get('spk_ne_t')
-    spk_A = data.item().get('spk_A')
-    spk_B = data.item().get('spk_B')
-    ID_ni = data.item().get('ID_ni')
-    ID_ne = data.item().get('ID_ne')
-    ID_A = data.item().get('ID_A')
-    ID_B = data.item().get('ID_B')
-    cs_intervals = data.item().get('cs_intervals')
+        #loading the data from the last simulation
+        data = np.load('conditioning_extinction/last_simulation_data.npy', allow_pickle=True)
+        spk_ni = data.item().get('spk_ni_t')
+        spk_ne = data.item().get('spk_ne_t')
+        spk_A = data.item().get('spk_A')
+        spk_B = data.item().get('spk_B')
+        ID_ni = data.item().get('ID_ni')
+        ID_ne = data.item().get('ID_ne')
+        ID_A = data.item().get('ID_A')
+        ID_B = data.item().get('ID_B')
+        cs_intervals = data.item().get('cs_intervals')
 
-    bin_f = 15 #time bin to calculate the time series of the trigger rate of the last simulation.
-    fr_IH_last = np.histogram(spk_ni, bins=np.arange(0, tsim, bin_f))
-    fr_A_last = np.histogram(spk_A, bins=np.arange(0, tsim, bin_f))
-    fr_B_last = np.histogram(spk_B, bins=np.arange(0, tsim, bin_f))
-
-
-    ###########################################################################
-    # Final results
-    ###########################################################################
-
-    # Raster plot for the last simulation
-    fig = plt.figure(constrained_layout=False, figsize=(15,10))
-    gs = fig.add_gridspec(13,1)
-
-    ax = fig.add_subplot(gs[0:7, 0])
-    ax.plot(spk_ne, ID_ne, 'k.', ms=2) #all excitatory exneurons
-    ax.plot(spk_ni, ID_ni + 3400, 'r.', ms=2) #inhibitory neurons
-    ax.plot(spk_A, ID_A, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
-    ax.plot(spk_B, ID_B + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-100,-100],'k-', lw = 3)
-    # plt.plot(tstim[nonzero_id],-100.0*np.ones(size(nonzero_id)),'.k')
-
-    ax.text(350, -350, 'CONDITIONING')
-    ax.text(1650, -350, 'EXTINCTION')
-    ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
-    ax.set_ylim(-400,NE+NI)
-    ax.set_xlim(50,tsim)
-    ax.set_ylabel('# Neuron')
-    ax.set_xlabel('Time (ms)')
-    ax.text(-200, 3800,"A", weight="bold", fontsize=30)
-
-    ax.get_xaxis().set_visible(False)
-
-    ax = fig.add_subplot(gs[7:10, 0])
-
-    ax.plot(fr_B_last[1][:-1], matlab_smooth(fr_B_last[0]*1000/(bin_f*NI), 5), lw=2)
-    ax.plot(fr_A_last[1][:-1], matlab_smooth(fr_A_last[0]*1000/(bin_f*NI), 5), lw=2)
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-0.5,-0.5],'k-', lw = 3)
-    ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
-    ax.set_xlim(50,tsim)
-    ax.set_ylim(-0.7,4.5)
-    ax.set_ylabel("Frequency (Hz)")
-    ax.set_xlabel("Time (ms)")
-    ax.text(-200, 3.8,"B", weight="bold", fontsize=30)
-    ax.get_xaxis().set_visible(False)
-
-    ax = fig.add_subplot(gs[10:, 0])
-    #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
-    ax.plot(fr_IH_last[1][:-1], matlab_smooth(fr_IH_last[0]*1000/(bin_f*NI), 5), 'r-')
-    #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-2,-2],'k-', lw = 3)
-    ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
-    ax.set_ylim(-3,20)
-    ax.set_xlim(50,tsim)
-    ax.set_ylabel("Frequency (Hz)")
-    ax.set_xlabel("Time (ms)")
-    #ax.get_xaxis().set_visible(False)
-    ax.text(-200, 17,"C", weight="bold", fontsize=30)
-    plt.tight_layout()
-    plt.savefig('conditioning_extinction/raster.png', dpi = 200)
-    #plt.show()
-
-    ###########################################################################
-    # Average firing rate,CS and CTX for each subpopulation
-    ###########################################################################
-    n_CS = 11 #total CS presentation
-    fig = plt.figure(constrained_layout=True, figsize=(7,10))
-    gs = fig.add_gridspec(6,1)
-
-    ax = fig.add_subplot(gs[0:2, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[0], yerr=np.std(results, axis=0)[0], fmt='s', ms=10, capsize=3, label = r"$pop_A$", color=plt.cm.tab10(1))
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[1], yerr=np.std(results, axis=0)[1], fmt='o', ms=10, capsize=3, label = r"$pop_B$", color=plt.cm.tab10(0))
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.set_ylim(-0.2,5)
-    ax.set_xticks(range(n_CS+1))
-    ax.text(1.2, 4.5, 'CONDITIONING')
-    ax.text(7, 4.5, 'EXTINCTION')
-    ax.set_ylabel('Firing rate (Hz)')
-    ax.set_xlabel('CS presentations')
-    legend = ax.legend(bbox_to_anchor=(0.25,0.87), fontsize=15)
-    legend.get_frame().set_alpha(0)
-    ax.get_xaxis().set_visible(False)
-    ax.text(-2, 4.4,"A", weight="bold", fontsize=30)
+        bin_f = 15 #time bin to calculate the time series of the trigger rate of the last simulation.
+        fr_IH_last = np.histogram(spk_ni, bins=np.arange(0, tsim, bin_f))
+        fr_A_last = np.histogram(spk_A, bins=np.arange(0, tsim, bin_f))
+        fr_B_last = np.histogram(spk_B, bins=np.arange(0, tsim, bin_f))
 
 
-    ax = fig.add_subplot(gs[2:4, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[3], yerr=np.std(results, axis=0)[3], fmt='o', ms=10, capsize=3)
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[2], yerr=np.std(results, axis=0)[2], fmt='s', ms=10, capsize=3)
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.set_xticks(range(n_CS+1))
-    ax.set_ylabel('CS weights (nS)')
-    ax.set_xlabel('CS presentations')
-    ax.set_ylim(0,3)
-    ax.get_xaxis().set_visible(False)
-    ax.text(-2, 2.7,"B", weight="bold", fontsize=30)
+        ###########################################################################
+        # Final results
+        ###########################################################################
+
+        # Raster plot for the last simulation
+        fig = plt.figure(constrained_layout=False, figsize=(15,10))
+        gs = fig.add_gridspec(13,1)
+
+        ax = fig.add_subplot(gs[0:7, 0])
+        ax.plot(spk_ne, ID_ne, 'k.', ms=2) #all excitatory exneurons
+        ax.plot(spk_ni, ID_ni + 3400, 'r.', ms=2) #inhibitory neurons
+        ax.plot(spk_A, ID_A, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
+        ax.plot(spk_B, ID_B + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
+
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-100,-100],'k-', lw = 3)
+        # plt.plot(tstim[nonzero_id],-100.0*np.ones(size(nonzero_id)),'.k')
+
+        ax.text(350, -350, 'CONDITIONING')
+        ax.text(1650, -350, 'EXTINCTION')
+        ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
+        ax.set_ylim(-400,NE+NI)
+        ax.set_xlim(50,tsim)
+        ax.set_ylabel('# Neuron')
+        ax.set_xlabel('Time (ms)')
+        ax.text(-200, 3800,"A", weight="bold", fontsize=30)
+
+        ax.get_xaxis().set_visible(False)
+
+        ax = fig.add_subplot(gs[7:10, 0])
+
+        ax.plot(fr_B_last[1][:-1], matlab_smooth(fr_B_last[0]*1000/(bin_f*NI), 5), lw=2)
+        ax.plot(fr_A_last[1][:-1], matlab_smooth(fr_A_last[0]*1000/(bin_f*NI), 5), lw=2)
+
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-0.5,-0.5],'k-', lw = 3)
+        ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
+        ax.set_xlim(50,tsim)
+        ax.set_ylim(-0.7,4.5)
+        ax.set_ylabel("Frequency (Hz)")
+        ax.set_xlabel("Time (ms)")
+        ax.text(-200, 3.8,"B", weight="bold", fontsize=30)
+        ax.get_xaxis().set_visible(False)
+
+        ax = fig.add_subplot(gs[10:, 0])
+        #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
+        ax.plot(fr_IH_last[1][:-1], matlab_smooth(fr_IH_last[0]*1000/(bin_f*NI), 5), 'r-')
+        #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
+
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-2,-2],'k-', lw = 3)
+        ax.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
+        ax.set_ylim(-3,20)
+        ax.set_xlim(50,tsim)
+        ax.set_ylabel("Frequency (Hz)")
+        ax.set_xlabel("Time (ms)")
+        #ax.get_xaxis().set_visible(False)
+        ax.text(-200, 17,"C", weight="bold", fontsize=30)
+        plt.tight_layout()
+        plt.savefig('conditioning_extinction/raster.png', dpi = 200)
+        #plt.show()
+
+        ###########################################################################
+        # Average firing rate,CS and CTX for each subpopulation
+        ###########################################################################
+        n_CS = 11 #total CS presentation
+        fig = plt.figure(constrained_layout=True, figsize=(7,10))
+        gs = fig.add_gridspec(6,1)
+
+        ax = fig.add_subplot(gs[0:2, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[0], yerr=np.std(results, axis=0)[0], fmt='s', ms=10, capsize=3, label = r"$pop_A$", color=plt.cm.tab10(1))
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[1], yerr=np.std(results, axis=0)[1], fmt='o', ms=10, capsize=3, label = r"$pop_B$", color=plt.cm.tab10(0))
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.set_ylim(-0.2,5)
+        ax.set_xticks(range(n_CS+1))
+        ax.text(1.2, 4.5, 'CONDITIONING')
+        ax.text(7, 4.5, 'EXTINCTION')
+        ax.set_ylabel('Firing rate (Hz)')
+        ax.set_xlabel('CS presentations')
+        legend = ax.legend(bbox_to_anchor=(0.25,0.87), fontsize=15)
+        legend.get_frame().set_alpha(0)
+        ax.get_xaxis().set_visible(False)
+        ax.text(-2, 4.4,"A", weight="bold", fontsize=30)
 
 
-    ax = fig.add_subplot(gs[4:6, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[5], yerr=np.std(results, axis=0)[5], fmt='o', ms=10, capsize=3)
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[4], yerr=np.std(results, axis=0)[4], fmt='s', ms=10, capsize=3)
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.set_xticks(range(n_CS+1))
-    ax.set_ylabel('HPC weights (nS)')
-    ax.set_xlabel('CS presentations')
-    ax.text(-2, 2.7,"C", weight="bold", fontsize=30)
-    ax.set_ylim(0,3)
+        ax = fig.add_subplot(gs[2:4, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[3], yerr=np.std(results, axis=0)[3], fmt='o', ms=10, capsize=3)
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[2], yerr=np.std(results, axis=0)[2], fmt='s', ms=10, capsize=3)
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.set_xticks(range(n_CS+1))
+        ax.set_ylabel('CS weights (nS)')
+        ax.set_xlabel('CS presentations')
+        ax.set_ylim(0,3)
+        ax.get_xaxis().set_visible(False)
+        ax.text(-2, 2.7,"B", weight="bold", fontsize=30)
 
-    plt.savefig('conditioning_extinction/avarages.png', dpi = 200)
-    plt.show()
+
+        ax = fig.add_subplot(gs[4:6, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[5], yerr=np.std(results, axis=0)[5], fmt='o', ms=10, capsize=3)
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[4], yerr=np.std(results, axis=0)[4], fmt='s', ms=10, capsize=3)
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.set_xticks(range(n_CS+1))
+        ax.set_ylabel('HPC weights (nS)')
+        ax.set_xlabel('CS presentations')
+        ax.text(-2, 2.7,"C", weight="bold", fontsize=30)
+        ax.set_ylim(0,3)
+
+        plt.savefig('conditioning_extinction/avarages.png', dpi = 200)
+        plt.show()
 
 #protocol 2: Renewal of fear, objective: to qualitatively reproduce Figure 7 of the original paper
 elif protocol == 2:
@@ -463,157 +464,158 @@ elif protocol == 2:
         return(fr_A, fr_B, CS_A/nS, CS_B/nS, CTX_A/nS, CTX_B/nS)
 
 
-    processing_simulations = mp.Pool(3)
-    results = processing_simulations.map(renewal_fear_simulations, range(n_simulations))
+    if __name__ == '__main__':
+        processing_simulations = mp.Pool(3)
+        results = processing_simulations.map(renewal_fear_simulations, range(n_simulations))
 
 
-    #loading the data from the last simulation
-    data = np.load('renewal_fear/last_simulation_data.npy', allow_pickle=True)
-    spk_ni = data.item().get('spk_ni_t')
-    spk_ne = data.item().get('spk_ne_t')
-    spk_A = data.item().get('spk_A')
-    spk_B = data.item().get('spk_B')
-    ID_ni = data.item().get('ID_ni')
-    ID_ne = data.item().get('ID_ne')
-    ID_A = data.item().get('ID_A')
-    ID_B = data.item().get('ID_B')
-    cs_intervals = data.item().get('cs_intervals')
+        #loading the data from the last simulation
+        data = np.load('renewal_fear/last_simulation_data.npy', allow_pickle=True)
+        spk_ni = data.item().get('spk_ni_t')
+        spk_ne = data.item().get('spk_ne_t')
+        spk_A = data.item().get('spk_A')
+        spk_B = data.item().get('spk_B')
+        ID_ni = data.item().get('ID_ni')
+        ID_ne = data.item().get('ID_ne')
+        ID_A = data.item().get('ID_A')
+        ID_B = data.item().get('ID_B')
+        cs_intervals = data.item().get('cs_intervals')
 
-    bin_f = 15 #time bin to calculate the time series of the trigger rate of the last simulation.
-    fr_IH_last = np.histogram(spk_ni, bins=np.arange(0, tsim, bin_f))
-    fr_A_last = np.histogram(spk_A, bins=np.arange(0, tsim, bin_f))
-    fr_B_last = np.histogram(spk_B, bins=np.arange(0, tsim, bin_f))
-
-
-    ###########################################################################
-    # Final results
-    ###########################################################################
-
-    # Raster plot for the last simulation
-    fig = plt.figure(constrained_layout=False, figsize=(15,10))
-    gs = fig.add_gridspec(13,1)
-
-    ax = fig.add_subplot(gs[0:7, 0])
-    ax.plot(spk_ne, ID_ne, 'k.', ms=2) #all excitatory exneurons
-    ax.plot(spk_ni, ID_ni + 3400, 'r.', ms=2) #inhibitory neurons
-    ax.plot(spk_A, ID_A, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
-    ax.plot(spk_B, ID_B + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-100,-100],'k-', lw = 3)
-    # plt.plot(tstim[nonzero_id],-100.0*np.ones(size(nonzero_id)),'.k')
-
-    ax.text(350, -350, 'CONDITIONING')
-    ax.text(1650, -350, 'EXTINCTION')
-    ax.text(2430, -350, 'RENEWAL')
-    ax.axvline(t1, ls='--', lw=2, color='black')
-    ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
-    ax.set_ylim(-400,NE+NI)
-    ax.set_xlim(50,tsim)
-    ax.set_ylabel('# Neuron')
-    ax.set_xlabel('Time (ms)')
-    ax.text(-200, 3800,"A", weight="bold", fontsize=30)
-
-    ax.get_xaxis().set_visible(False)
-
-    ax = fig.add_subplot(gs[7:10, 0])
-
-    ax.plot(fr_B_last[1][:-1], matlab_smooth(fr_B_last[0]*1000/(bin_f*NI), 5), lw=2)
-    ax.plot(fr_A_last[1][:-1], matlab_smooth(fr_A_last[0]*1000/(bin_f*NI), 5), lw=2)
-
-    #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
-    #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-0.5,-0.5],'k-', lw = 3)
-    ax.axvline(t1, ls='--', lw=2, color='black')
-    ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
-    ax.set_xlim(50,tsim)
-    ax.set_ylim(-0.7,4.5)
-    ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
-
-    ax.set_ylabel("Frequency (Hz)")
-    ax.set_xlabel("Time (ms)")
-    ax.text(-200, 3.8,"B", weight="bold", fontsize=30)
-    ax.get_xaxis().set_visible(False)
-
-    ax = fig.add_subplot(gs[10:, 0])
-    #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
-    #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
-    ax.plot(fr_IH_last[1][:-1], matlab_smooth(fr_IH_last[0]*1000/(bin_f*NI), 5), 'r-')
-    #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
-
-    for i,j in cs_intervals:
-        ax.plot([i,j],[-2,-2],'k-', lw = 3)
-    ax.axvline(t1, ls='--', lw=2, color='black')
-    ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
-    ax.set_ylim(-3,20)
-    ax.set_xlim(50,tsim)
-    ax.set_ylabel("Frequency (Hz)")
-    ax.set_xlabel("Time (ms)")
-    #ax.get_xaxis().set_visible(False)
-    ax.text(-200, 17,"C", weight="bold", fontsize=30)
-    plt.tight_layout()
-    plt.savefig('renewal_fear/raster.png', dpi = 200)
+        bin_f = 15 #time bin to calculate the time series of the trigger rate of the last simulation.
+        fr_IH_last = np.histogram(spk_ni, bins=np.arange(0, tsim, bin_f))
+        fr_A_last = np.histogram(spk_A, bins=np.arange(0, tsim, bin_f))
+        fr_B_last = np.histogram(spk_B, bins=np.arange(0, tsim, bin_f))
 
 
-    ###########################################################################
-    # Average firing rate,CS and CTX for each subpopulation
-    ###########################################################################
-    n_CS = 12 #total CS presentation
+        ###########################################################################
+        # Final results
+        ###########################################################################
 
-    fig = plt.figure(constrained_layout=True, figsize=(7,10))
-    gs = fig.add_gridspec(6,1)
+        # Raster plot for the last simulation
+        fig = plt.figure(constrained_layout=False, figsize=(15,10))
+        gs = fig.add_gridspec(13,1)
 
-    ax = fig.add_subplot(gs[0:2, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[0], yerr=np.std(results, axis=0)[0], fmt='s', ms=10, capsize=3, label = r"$pop_A$", color=plt.cm.tab10(1))
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[1], yerr=np.std(results, axis=0)[1], fmt='o', ms=10, capsize=3, label = r"$pop_B$", color=plt.cm.tab10(0))
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.axvline(11.5, ls='--', lw=2, color='black')
+        ax = fig.add_subplot(gs[0:7, 0])
+        ax.plot(spk_ne, ID_ne, 'k.', ms=2) #all excitatory exneurons
+        ax.plot(spk_ni, ID_ni + 3400, 'r.', ms=2) #inhibitory neurons
+        ax.plot(spk_A, ID_A, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
+        ax.plot(spk_B, ID_B + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
 
-    ax.set_xticks(range(n_CS+1))
-    ax.set_ylim(-0.2,5)
-    ax.text(0.8, 4.5, 'CONDITIONING')
-    ax.text(6.9, 4.5, 'EXTINCTION')
-    ax.text(11.9, 3.5, 'RENEWAL', horizontalalignment='center', verticalalignment='center', rotation=270)
-    ax.set_ylabel('Firing rate (Hz)')
-    ax.set_xlabel('CS presentations')
-    legend = ax.legend(bbox_to_anchor=(0.25,0.87), fontsize=15)
-    legend.get_frame().set_alpha(0)
-    ax.get_xaxis().set_visible(False)
-    ax.text(-2, 4.4,"A", weight="bold", fontsize=30)
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-100,-100],'k-', lw = 3)
+        # plt.plot(tstim[nonzero_id],-100.0*np.ones(size(nonzero_id)),'.k')
+
+        ax.text(350, -350, 'CONDITIONING')
+        ax.text(1650, -350, 'EXTINCTION')
+        ax.text(2430, -350, 'RENEWAL')
+        ax.axvline(t1, ls='--', lw=2, color='black')
+        ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
+        ax.set_ylim(-400,NE+NI)
+        ax.set_xlim(50,tsim)
+        ax.set_ylabel('# Neuron')
+        ax.set_xlabel('Time (ms)')
+        ax.text(-200, 3800,"A", weight="bold", fontsize=30)
+
+        ax.get_xaxis().set_visible(False)
+
+        ax = fig.add_subplot(gs[7:10, 0])
+
+        ax.plot(fr_B_last[1][:-1], matlab_smooth(fr_B_last[0]*1000/(bin_f*NI), 5), lw=2)
+        ax.plot(fr_A_last[1][:-1], matlab_smooth(fr_A_last[0]*1000/(bin_f*NI), 5), lw=2)
+
+        #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
+        #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
+
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-0.5,-0.5],'k-', lw = 3)
+        ax.axvline(t1, ls='--', lw=2, color='black')
+        ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
+        ax.set_xlim(50,tsim)
+        ax.set_ylim(-0.7,4.5)
+        ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
+
+        ax.set_ylabel("Frequency (Hz)")
+        ax.set_xlabel("Time (ms)")
+        ax.text(-200, 3.8,"B", weight="bold", fontsize=30)
+        ax.get_xaxis().set_visible(False)
+
+        ax = fig.add_subplot(gs[10:, 0])
+        #ax.plot(fr_BB[1][:-1], fr_BB[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_AA[1][:-1], fr_AA[0]*1000/(bin_f*NI),lw=2)
+        #ax.plot(fr_IH[1][:-1], fr_IH[0]*1000/(bin_f*NI), 'r-')
+        ax.plot(fr_IH_last[1][:-1], matlab_smooth(fr_IH_last[0]*1000/(bin_f*NI), 5), 'r-')
+        #plt.plot(fr_EX[1][:-1], fr_EX[0]*1000/(bin_f*NI), 'b-')
+
+        for i,j in cs_intervals:
+            ax.plot([i,j],[-2,-2],'k-', lw = 3)
+        ax.axvline(t1, ls='--', lw=2, color='black')
+        ax.axvline(t2+tCTXB_dur, ls='--', lw=2, color='black')
+        ax.set_ylim(-3,20)
+        ax.set_xlim(50,tsim)
+        ax.set_ylabel("Frequency (Hz)")
+        ax.set_xlabel("Time (ms)")
+        #ax.get_xaxis().set_visible(False)
+        ax.text(-200, 17,"C", weight="bold", fontsize=30)
+        plt.tight_layout()
+        plt.savefig('renewal_fear/raster.png', dpi = 200)
 
 
-    ax = fig.add_subplot(gs[2:4, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[3], yerr=np.std(results, axis=0)[3], fmt='o', ms=10, capsize=3)
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[2], yerr=np.std(results, axis=0)[2], fmt='s', ms=10, capsize=3)
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.axvline(11.5, ls='--', lw=2, color='black')
+        ###########################################################################
+        # Average firing rate,CS and CTX for each subpopulation
+        ###########################################################################
+        n_CS = 12 #total CS presentation
 
-    ax.set_xticks(range(n_CS+1))
-    ax.set_ylabel('CS weights (nS)')
-    ax.set_xlabel('CS presentations')
-    ax.set_ylim(0,3)
-    ax.get_xaxis().set_visible(False)
-    ax.text(-2, 2.7,"B", weight="bold", fontsize=30)
+        fig = plt.figure(constrained_layout=True, figsize=(7,10))
+        gs = fig.add_gridspec(6,1)
+
+        ax = fig.add_subplot(gs[0:2, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[0], yerr=np.std(results, axis=0)[0], fmt='s', ms=10, capsize=3, label = r"$pop_A$", color=plt.cm.tab10(1))
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[1], yerr=np.std(results, axis=0)[1], fmt='o', ms=10, capsize=3, label = r"$pop_B$", color=plt.cm.tab10(0))
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.axvline(11.5, ls='--', lw=2, color='black')
+
+        ax.set_xticks(range(n_CS+1))
+        ax.set_ylim(-0.2,5)
+        ax.text(0.8, 4.5, 'CONDITIONING')
+        ax.text(6.9, 4.5, 'EXTINCTION')
+        ax.text(11.9, 3.5, 'RENEWAL', horizontalalignment='center', verticalalignment='center', rotation=270)
+        ax.set_ylabel('Firing rate (Hz)')
+        ax.set_xlabel('CS presentations')
+        legend = ax.legend(bbox_to_anchor=(0.25,0.87), fontsize=15)
+        legend.get_frame().set_alpha(0)
+        ax.get_xaxis().set_visible(False)
+        ax.text(-2, 4.4,"A", weight="bold", fontsize=30)
 
 
-    ax = fig.add_subplot(gs[4:6, 0])
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[5], yerr=np.std(results, axis=0)[5], fmt='o', ms=10, capsize=3)
-    ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[4], yerr=np.std(results, axis=0)[4], fmt='s', ms=10, capsize=3)
-    ax.axvline(5.5, ls='--', lw=2, color='black')
-    ax.axvline(11.5, ls='--', lw=2, color='black')
+        ax = fig.add_subplot(gs[2:4, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[3], yerr=np.std(results, axis=0)[3], fmt='o', ms=10, capsize=3)
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[2], yerr=np.std(results, axis=0)[2], fmt='s', ms=10, capsize=3)
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.axvline(11.5, ls='--', lw=2, color='black')
 
-    ax.set_xticks(range(n_CS+1))
-    ax.set_ylabel('HPC weights (nS)')
-    ax.set_xlabel('CS presentations')
-    ax.text(-2, 2.7,"C", weight="bold", fontsize=30)
-    ax.set_ylim(0,3)
-    plt.savefig('renewal_fear/avarages.png', dpi = 200)
-    plt.show()
+        ax.set_xticks(range(n_CS+1))
+        ax.set_ylabel('CS weights (nS)')
+        ax.set_xlabel('CS presentations')
+        ax.set_ylim(0,3)
+        ax.get_xaxis().set_visible(False)
+        ax.text(-2, 2.7,"B", weight="bold", fontsize=30)
+
+
+        ax = fig.add_subplot(gs[4:6, 0])
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[5], yerr=np.std(results, axis=0)[5], fmt='o', ms=10, capsize=3)
+        ax.errorbar(range(1,n_CS+1),np.mean(results, axis=0)[4], yerr=np.std(results, axis=0)[4], fmt='s', ms=10, capsize=3)
+        ax.axvline(5.5, ls='--', lw=2, color='black')
+        ax.axvline(11.5, ls='--', lw=2, color='black')
+
+        ax.set_xticks(range(n_CS+1))
+        ax.set_ylabel('HPC weights (nS)')
+        ax.set_xlabel('CS presentations')
+        ax.text(-2, 2.7,"C", weight="bold", fontsize=30)
+        ax.set_ylim(0,3)
+        plt.savefig('renewal_fear/avarages.png', dpi = 200)
+        plt.show()
 
 
 #protocol 3: increase in network connectivity, objective: to check gamma oscillations during the application of CS
@@ -822,106 +824,107 @@ elif protocol == 4:
                 
         return(pii)
 
-    processing_blockage = mp.Pool(3)
-    results = processing_blockage.map(synchrony_simulations, pii_variation)
+    if __name__ == '__main__':
+        processing_blockage = mp.Pool(3)
+        results = processing_blockage.map(synchrony_simulations, pii_variation)
 
 
-    ###########################################################################
-    # Synchrony index
-    ###########################################################################
+        ###########################################################################
+        # Synchrony index
+        ###########################################################################
 
 
-    #Understanding the meaning of our synchrony index
-    wii = 2.00
-    sdelii = 0
-    l = 0
-    pii = [0.1,0.6,0.7]
-    panel = ['A', 'B', 'C']
+        #Understanding the meaning of our synchrony index
+        wii = 2.00
+        sdelii = 0
+        l = 0
+        pii = [0.1,0.6,0.7]
+        panel = ['A', 'B', 'C']
 
-    fig, axs = plt.subplots(3, 1, figsize=(14,9),sharex=True, sharey=True)
-    for j in range(3):
-        data = np.load('synchrony/data/pii' + ("{:.2f}".format(pii[j])) + '_wii' + ("{:.2f}".format(wii)) + '_sdelii_' + sdelii_label[sdelii] + '_n_{:}'.format(l) + '.npy', allow_pickle=True)
-        #pii0.10_wii1.00_sdelii_low_n_3
-        spk_ni  = data.item().get('spk_ni_t')
-        m_array = data.item().get('m')
-        tstim   = data.item().get('tstim')
-        nCSA    = data.item().get('nCSA')
+        fig, axs = plt.subplots(3, 1, figsize=(14,9),sharex=True, sharey=True)
+        for j in range(3):
+            data = np.load('synchrony/data/pii' + ("{:.2f}".format(pii[j])) + '_wii' + ("{:.2f}".format(wii)) + '_sdelii_' + sdelii_label[sdelii] + '_n_{:}'.format(l) + '.npy', allow_pickle=True)
+            #pii0.10_wii1.00_sdelii_low_n_3
+            spk_ni  = data.item().get('spk_ni_t')
+            m_array = data.item().get('m')
+            tstim   = data.item().get('tstim')
+            nCSA    = data.item().get('nCSA')
 
-        nonzero_id = np.nonzero(m_array)
-        winsize  = int(tCS_dur/delta_tr)
-        ind  = 0
-        cs_intervals = []
-        for i in range(nCSA):
-            cs_intervals.append([tstim[nonzero_id][ind],tstim[nonzero_id][ind+winsize-1]])
-            ind+=winsize
+            nonzero_id = np.nonzero(m_array)
+            winsize  = int(tCS_dur/delta_tr)
+            ind  = 0
+            cs_intervals = []
+            for i in range(nCSA):
+                cs_intervals.append([tstim[nonzero_id][ind],tstim[nonzero_id][ind+winsize-1]])
+                ind+=winsize
 
-        inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[-4][0],tstim[-1],1.0))
+            inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[-4][0],tstim[-1],1.0))
 
-        ax = axs[j]
-        ax.plot(_[:-1],matlab_smooth(inh_activity, 5)*1.5,'k-',lw=1.5)
-        for i in range(1,5):
-            ax.plot([cs_intervals[-i][0],cs_intervals[-i][1]],[-5,-5],'k-',lw = 3)
-        ax.text(0.8,0.8,'Synchrony index: {:.2f}'.format(np.var(inh_activity)/np.mean(inh_activity)),horizontalalignment='center', verticalalignment='center', transform = ax.transAxes, size=15)
-        ax.set_xlim(1300,2100)
-        ax.text(1315, 42,"{}".format(panel[j]), weight="bold", fontsize=25)
-        #f, Pxx_den = signal.welch(inh_activity, fs=1000) #PSD
+            ax = axs[j]
+            ax.plot(_[:-1],matlab_smooth(inh_activity, 5)*1.5,'k-',lw=1.5)
+            for i in range(1,5):
+                ax.plot([cs_intervals[-i][0],cs_intervals[-i][1]],[-5,-5],'k-',lw = 3)
+            ax.text(0.8,0.8,'Synchrony index: {:.2f}'.format(np.var(inh_activity)/np.mean(inh_activity)),horizontalalignment='center', verticalalignment='center', transform = ax.transAxes, size=15)
+            ax.set_xlim(1300,2100)
+            ax.text(1315, 42,"{}".format(panel[j]), weight="bold", fontsize=25)
+            #f, Pxx_den = signal.welch(inh_activity, fs=1000) #PSD
 
         
-        #plt.plot(f, Pxx_den,lw=2)
-    ax.set_xlabel("Time (ms)", fontsize=22)
-    ax = axs[1]
-    ax.set_ylabel("Activity", fontsize=22)
-    plt.tight_layout(h_pad=0)
-    plt.savefig('synchrony/examples_synchrony_index.png', dpi = 200)
+            #plt.plot(f, Pxx_den,lw=2)
+        ax.set_xlabel("Time (ms)", fontsize=22)
+        ax = axs[1]
+        ax.set_ylabel("Activity", fontsize=22)
+        plt.tight_layout(h_pad=0)
+        plt.savefig('synchrony/examples_synchrony_index.png', dpi = 200)
     
 
-    #complete figure for all simulations
-    plt.figure()
-    graph_color = ['gray', 'lightgreen', 'darkgreen']
+        #complete figure for all simulations
+        plt.figure()
+        graph_color = ['gray', 'lightgreen', 'darkgreen']
 
-    for sdelii in range(len(sdelii_variation)):
-        for wii in wii_variation:
-            sync_index = []
-            for pii in pii_variation:
-                n_sync_index = []
-                for l in range(n_simulations):
-                    data = np.load('synchrony/data/pii' + ("{:.2f}".format(pii)) + '_wii' + ("{:.2f}".format(wii)) + '_sdelii_' + sdelii_label[sdelii] + '_n_{:}'.format(l) + '.npy', allow_pickle=True)
+        for sdelii in range(len(sdelii_variation)):
+            for wii in wii_variation:
+                sync_index = []
+                for pii in pii_variation:
+                    n_sync_index = []
+                    for l in range(n_simulations):
+                        data = np.load('synchrony/data/pii' + ("{:.2f}".format(pii)) + '_wii' + ("{:.2f}".format(wii)) + '_sdelii_' + sdelii_label[sdelii] + '_n_{:}'.format(l) + '.npy', allow_pickle=True)
 
-                    spk_ni  = data.item().get('spk_ni_t')
-                    m_array = data.item().get('m')
-                    tstim   = data.item().get('tstim')
-                    nCSA    = data.item().get('nCSA')
+                        spk_ni  = data.item().get('spk_ni_t')
+                        m_array = data.item().get('m')
+                        tstim   = data.item().get('tstim')
+                        nCSA    = data.item().get('nCSA')
 
-                    nonzero_id = np.nonzero(m_array)
-                    winsize  = int(tCS_dur/delta_tr)
-                    ind  = 0
-                    cs_intervals = []
-                    for i in range(nCSA):
-                        cs_intervals.append([tstim[nonzero_id][ind],tstim[nonzero_id][ind+winsize-1]])
-                        ind+=winsize
+                        nonzero_id = np.nonzero(m_array)
+                        winsize  = int(tCS_dur/delta_tr)
+                        ind  = 0
+                        cs_intervals = []
+                        for i in range(nCSA):
+                            cs_intervals.append([tstim[nonzero_id][ind],tstim[nonzero_id][ind+winsize-1]])
+                            ind+=winsize
 
-                    # sync_aux = 0.0
-                    # for j in range(nCSA-10, nCSA):
-                    #     inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[j][0],cs_intervals[j][1],1.0))
-                    #     sync_aux += np.var(inh_activity)/np.mean(inh_activity)
-                    # sync_index.append(sync_aux/(nCSA-(nCSA-10)))
+                        # sync_aux = 0.0
+                        # for j in range(nCSA-10, nCSA):
+                        #     inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[j][0],cs_intervals[j][1],1.0))
+                        #     sync_aux += np.var(inh_activity)/np.mean(inh_activity)
+                        # sync_index.append(sync_aux/(nCSA-(nCSA-10)))
 
-                    inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[-4][0],tstim[-1],1.0))
-                    n_sync_index.append(np.var(inh_activity)/np.mean(inh_activity))
-                sync_index.append(np.mean(n_sync_index))
+                        inh_activity,_ =  np.histogram(spk_ni, bins=np.arange(cs_intervals[-4][0],tstim[-1],1.0))
+                        n_sync_index.append(np.var(inh_activity)/np.mean(inh_activity))
+                    sync_index.append(np.mean(n_sync_index))
 
-            if sdelii_label[sdelii]=='high':
-                plt.plot(pii_variation, sync_index, color=graph_color[int(wii)-1], label=r'$w_{ii}$: ' + ("{:.0f}".format(wii)) + ' nS' + ' for "higher"', lw=2)
-            else:
-                plt.plot(pii_variation, sync_index, color=graph_color[int(wii)-1], linestyle='--', label=r'$w_{ii}$: ' + ("{:.0f}".format(wii)) + ' nS'  + ' for "lower"',lw=2)
-    plt.axhline(y=4.5, lw=1.0, color='purple',ls='--')
-    plt.xlabel(r'$p_{ii}$', fontsize=22)
-    plt.ylabel('Synchrony index',fontsize=22)
-    legend = plt.legend(fontsize=15)
-    legend.get_frame().set_alpha(0)
-    plt.tight_layout()
-    plt.savefig('synchrony/synchrony_index.png', dpi = 200)
-    plt.show()
+                if sdelii_label[sdelii]=='high':
+                    plt.plot(pii_variation, sync_index, color=graph_color[int(wii)-1], label=r'$w_{ii}$: ' + ("{:.0f}".format(wii)) + ' nS' + ' for "higher"', lw=2)
+                else:
+                    plt.plot(pii_variation, sync_index, color=graph_color[int(wii)-1], linestyle='--', label=r'$w_{ii}$: ' + ("{:.0f}".format(wii)) + ' nS'  + ' for "lower"',lw=2)
+        plt.axhline(y=4.5, lw=1.0, color='purple',ls='--')
+        plt.xlabel(r'$p_{ii}$', fontsize=22)
+        plt.ylabel('Synchrony index',fontsize=22)
+        legend = plt.legend(fontsize=15)
+        legend.get_frame().set_alpha(0)
+        plt.tight_layout()
+        plt.savefig('synchrony/synchrony_index.png', dpi = 200)
+        plt.show()
 
 #protocol 5: GABA blockage experiment, objective: to qualitatively reproduce Figure 8C of the original paper
 elif protocol == 5:
@@ -1014,62 +1017,63 @@ elif protocol == 5:
 
         return(np.mean(last_fr_A), np.std(last_fr_A),np.mean(last_fr_B), np.std(last_fr_B))
 
-    processing_blockage = mp.Pool(3)
-    results = processing_blockage.map(GABA_block, inh_deactivate)
+    if __name__ == '__main__':
+        processing_blockage = mp.Pool(3)
+        results = processing_blockage.map(GABA_block, inh_deactivate)
 
-    for l in inh_deactivate:
-        data = np.load('GABA_blockage/raster_blockage_{}.npy'.format(l*100),allow_pickle=True)
-        spk_ne_t = data.item().get('spk_ne_t')
-        spk_ni_t = data.item().get('spk_ni_t')
-        spk_A_t = data.item().get('spk_A_t')
-        spk_B_t = data.item().get('spk_B_t')
-        spk_ne_id = data.item().get('spk_ne_id')
-        spk_ni_id = data.item().get('spk_ni_id')
-        spk_A_id = data.item().get('spk_A_id')
-        spk_B_id = data.item().get('spk_B_id')
-        cs_time = data.item().get('cs_time')
+        for l in inh_deactivate:
+            data = np.load('GABA_blockage/raster_blockage_{}.npy'.format(l*100),allow_pickle=True)
+            spk_ne_t = data.item().get('spk_ne_t')
+            spk_ni_t = data.item().get('spk_ni_t')
+            spk_A_t = data.item().get('spk_A_t')
+            spk_B_t = data.item().get('spk_B_t')
+            spk_ne_id = data.item().get('spk_ne_id')
+            spk_ni_id = data.item().get('spk_ni_id')
+            spk_A_id = data.item().get('spk_A_id')
+            spk_B_id = data.item().get('spk_B_id')
+            cs_time = data.item().get('cs_time')
 
-        plt.figure(figsize=(15,7))
-        plt.plot(spk_ne_t, spk_ne_id, 'k.', ms=2) #all excitatory exneurons
-        plt.plot(spk_ni_t, spk_ni_id + 3400, 'r.', ms=2) #inhibitory neurons
-        plt.plot(spk_A_t, spk_A_id, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
-        plt.plot(spk_B_t, spk_B_id + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
+            plt.figure(figsize=(15,7))
+            plt.plot(spk_ne_t, spk_ne_id, 'k.', ms=2) #all excitatory exneurons
+            plt.plot(spk_ni_t, spk_ni_id + 3400, 'r.', ms=2) #inhibitory neurons
+            plt.plot(spk_A_t, spk_A_id, '.', ms=4, color="tab:orange") #sub-pop A - fear neurons
+            plt.plot(spk_B_t, spk_B_id + 2720 , '.', color="tab:blue", ms=4) #sub-pop B - extinction neurons
 
-        for m,n in cs_time:
-            plt.plot([m,n],[-100,-100],'k-', lw = 3)
+            for m,n in cs_time:
+                plt.plot([m,n],[-100,-100],'k-', lw = 3)
 	    
-        plt.text(350, -350, 'CONDITIONING')
-        plt.text(1650, -350, 'EXTINCTION')
-        plt.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
-        plt.ylim(-400,4000)
-        plt.xlim(-50,tsim + 50)
-        plt.ylabel('# Neuron')
-        plt.xlabel('Time (ms)')
+            plt.text(350, -350, 'CONDITIONING')
+            plt.text(1650, -350, 'EXTINCTION')
+            plt.axvline(tinit + tCTXA_dur, ls='--', lw=2, color='black')
+            plt.ylim(-400,4000)
+            plt.xlim(-50,tsim + 50)
+            plt.ylabel('# Neuron')
+            plt.xlabel('Time (ms)')
+            plt.tight_layout()
+            plt.savefig('GABA_blockage/raster_blockage_{}.png'.format(l*100), dpi = 200)
+	    #plt.show()
+
+        n_fr_A = []
+        error_fr_A = []
+        n_fr_B = []
+        error_fr_B = []
+
+        for k in range(len(inh_deactivate)):
+            n_fr_A.append(results[k][0])
+            error_fr_A.append(results[k][1])
+            n_fr_B.append(results[k][2])
+            error_fr_B.append(results[k][3])
+
+        plt.figure(figsize=(5,6))
+        GABA_blockage = ['0%','50%','90%']
+        plt.xticks([0,50,90], GABA_blockage)
+
+        plt.errorbar([0,50,90],n_fr_B, yerr=error_fr_B, fmt='o', ms=10, capsize=3)
+        plt.errorbar([0,50,90],n_fr_A, yerr=error_fr_A, fmt='s', ms=10, capsize=3)
+
+        plt.xlim(-10,100)
+        plt.xlabel("GABA blockage")
+        plt.ylabel("Firing Rate (Hz)")
         plt.tight_layout()
-        plt.savefig('GABA_blockage/raster_blockage_{}.png'.format(l*100), dpi = 200)
-	#plt.show()
-
-    n_fr_A = []
-    error_fr_A = []
-    n_fr_B = []
-    error_fr_B = []
-
-    for k in range(len(inh_deactivate)):
-        n_fr_A.append(results[k][0])
-        error_fr_A.append(results[k][1])
-        n_fr_B.append(results[k][2])
-        error_fr_B.append(results[k][3])
-
-    plt.figure(figsize=(5,6))
-    GABA_blockage = ['0%','50%','90%']
-    plt.xticks([0,50,90], GABA_blockage)
-
-    plt.errorbar([0,50,90],n_fr_B, yerr=error_fr_B, fmt='o', ms=10, capsize=3)
-    plt.errorbar([0,50,90],n_fr_A, yerr=error_fr_A, fmt='s', ms=10, capsize=3)
-
-    plt.xlim(-10,100)
-    plt.xlabel("GABA blockage")
-    plt.ylabel("Firing Rate (Hz)")
-    plt.tight_layout()
-    plt.savefig('GABA_blockage/gaba_block.png', dpi = 200)
-    plt.show()
+        plt.savefig('GABA_blockage/gaba_block.png', dpi = 200)
+        plt.show()
